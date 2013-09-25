@@ -23,7 +23,7 @@ import java.util.Date;
 
 import eu.nerdz.api.messages.Conversation;
 
-class ReverseConversation implements Conversation {
+public class ReverseConversation implements Conversation {
 
     /**
      *

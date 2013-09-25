@@ -5,6 +5,7 @@
 
 	<property name="src.dir"     value="src"/>
 	<property name="testsrc.dir" value="tests"/>
+	<property name="rtlibs.dir" value="libs"/>
 	<property name="externallibs.dir" value="real-libs"/>
     <property name="build.dir"   value="build"/>
 	<property name="docs.dir"    value="docs"/>
@@ -14,6 +15,7 @@
     <property name="jar.dir"     value="${build.dir}/jar"/>
 
 	<path id="classpath">
+		<fileset dir="${rtlibs.dir}" includes="**/*.jar"/>
 		<fileset dir="${externallibs.dir}" includes="**/*.jar"/>
 	</path>
 

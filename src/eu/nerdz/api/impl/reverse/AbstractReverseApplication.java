@@ -196,7 +196,7 @@ public abstract class AbstractReverseApplication implements Application {
      * @throws IOException
      * @throws HttpException
      */
-    protected String get() throws IOException, HttpException {
+    public String get() throws IOException, HttpException {
         return this.get("");
     }
 
@@ -209,7 +209,7 @@ public abstract class AbstractReverseApplication implements Application {
      * @throws IOException
      * @throws HttpException
      */
-    protected String get(String url) throws IOException, HttpException {
+    public String get(String url) throws IOException, HttpException {
         return this.get(url, false);
     }
 
@@ -223,7 +223,7 @@ public abstract class AbstractReverseApplication implements Application {
      * @throws IOException
      * @throws HttpException
      */
-    protected String get(String url, boolean consume) throws IOException, HttpException {
+    public String get(String url, boolean consume) throws IOException, HttpException {
 
         HttpGet get = new HttpGet(AbstractReverseApplication.NERDZ_DOMAIN_NAME + url);
         ResponseHandler<String> responseHandler = new BasicResponseHandler();
@@ -259,7 +259,7 @@ public abstract class AbstractReverseApplication implements Application {
      * @throws IOException
      * @throws HttpException
      */
-    protected String post(String url, Map<String, String> form) throws IOException, HttpException {
+    public String post(String url, Map<String, String> form) throws IOException, HttpException {
         return this.post(url, form, null, false);
     }
 
@@ -275,7 +275,7 @@ public abstract class AbstractReverseApplication implements Application {
      * @throws IOException
      * @throws HttpException
      */
-    protected String post(String url, Map<String, String> form, String referer) throws IOException, HttpException {
+    public String post(String url, Map<String, String> form, String referer) throws IOException, HttpException {
         return this.post(url, form, referer, false);
     }
 
@@ -292,7 +292,7 @@ public abstract class AbstractReverseApplication implements Application {
      * @throws IOException
      * @throws HttpException
      */
-    protected String post(String url, Map<String, String> form, String referer, boolean consume) throws IOException, HttpException {
+    public String post(String url, Map<String, String> form, String referer, boolean consume) throws IOException, HttpException {
 
         HttpPost post = new HttpPost(AbstractReverseApplication.NERDZ_DOMAIN_NAME + url);
 

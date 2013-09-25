@@ -26,7 +26,7 @@ import eu.nerdz.api.messages.Message;
 /**
  * Created by marco on 7/18/13.
  */
-class ReverseMessage implements Message {
+public class ReverseMessage implements Message {
 
     /**
      *

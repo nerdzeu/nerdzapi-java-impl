@@ -1,3 +1,5 @@
+package eu.nerdz.api.impl.reverse.tests;
+
 import eu.nerdz.api.Nerdz;
 
 public class SendMessage {
