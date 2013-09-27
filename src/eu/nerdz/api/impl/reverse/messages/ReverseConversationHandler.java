@@ -92,7 +92,17 @@ public class ReverseConversationHandler implements ConversationHandler {
         return messages.get(0);
     }
 
-
+    /**
+     * Fetches messages and returns a pair containing a list of messages of given conversation and also a Boolean representing the fact that the conversation has still messages to be read.
+     * Not working properly in Reverse (but working great in FastReverse)
+     * @param conversation
+     * @param start
+     * @param howMany
+     * @return
+     * @throws IOException
+     * @throws HttpException
+     * @throws ContentException
+     */
     protected Pair<List<Message>, Boolean> getMessagesAndCheck(Conversation conversation, int start, int howMany) throws IOException, HttpException, ContentException {
 
         if (howMany > 10) {

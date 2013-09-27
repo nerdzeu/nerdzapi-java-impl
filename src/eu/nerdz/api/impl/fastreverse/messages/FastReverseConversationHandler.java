@@ -98,7 +98,7 @@ public class FastReverseConversationHandler extends ReverseConversationHandler {
                             conversation.getString("name"),
                             conversation.getInt("id"),
                             new Date(conversation.getLong("last_timestamp") * 1000L),
-                            FastReverseConversationHandler.removeBbcode(conversation.getString("last_message")),
+                            FastReverseConversationHandler.replaceBbcode(conversation.getString("last_message")),
                             conversation.getInt("last_sender") != this.mMessenger.getUserID()
 
                     ));
@@ -114,6 +114,10 @@ public class FastReverseConversationHandler extends ReverseConversationHandler {
 
     }
 
+    /**
+     * This is the only method that needs of being overloaded, because it does all message fetching.
+     * {@inheritDoc}
+     */
     @Override
     protected Pair<List<Message>, Boolean> getMessagesAndCheck(Conversation conversation, int start, int howMany) throws IOException, HttpException, ContentException {
 
@@ -171,7 +175,7 @@ public class FastReverseConversationHandler extends ReverseConversationHandler {
 
                     conversationList.addFirst(new FastReverseMessage(
                             sent ? this.mMessenger.getUsername() : conversation.getOtherName(),
-                            FastReverseConversationHandler.removeBbcode(conversationJson.getString("message")),
+                            FastReverseConversationHandler.replaceBbcode(conversationJson.getString("message")),
                             sent ? this.mMessenger.getUserID() : conversation.getOtherID(),
                             new Date(conversationJson.getLong("timestamp") * 1000L),
                             conversationJson.getBoolean("read")
@@ -190,11 +194,27 @@ public class FastReverseConversationHandler extends ReverseConversationHandler {
 
     }
 
-    private static String removeBbcode(String message) {
-        return FastReverseConversationHandler.removeImages(FastReverseConversationHandler.removeYoutubeVideos(message));
+    /**
+     * Replaces BBCode tags with URLs, removing all the rest.
+     * @param message A message String
+     * @return A parsed String
+     */
+    private static String replaceBbcode(String message) {
+        message = message.replaceAll("(?i)\\[hr\\]","\n");
+        message = FastReverseConversationHandler.replaceYoutubeVideos(message);
+        //message = FastReverseConversationHandler.replaceImages(message);
+        //message = FastReverseConversationHandler.replaceUrls(message);
+        message = FastReverseConversationHandler.replaceCode(message);
+        return message;
     }
 
-    private static String removeSingle(String regex, String message) {
+    /**
+     * Replaces a single tag.
+     * @param regex A regex
+     * @param message A message to be parsed
+     * @return A string in which all occurrences of regex have been substituted with the contents matched
+     */
+    private static String replaceSingle(String regex, String message) {
 
         Matcher matcher = Pattern.compile(regex,Pattern.DOTALL | Pattern.CASE_INSENSITIVE).matcher(message);
         StringBuffer result = new StringBuffer();
@@ -208,19 +228,65 @@ public class FastReverseConversationHandler extends ReverseConversationHandler {
         return result.toString();
     }
 
-    private static String removeImages(String message) {
-        return FastReverseConversationHandler.removeSingle("\\[img\\](.*?)\\[/img\\]", message);
+
+
+    private static String replaceDouble(String regex, String message, String format) {
+
+        Matcher matcher = Pattern.compile(regex,Pattern.DOTALL | Pattern.CASE_INSENSITIVE).matcher(message);
+        StringBuffer result = new StringBuffer();
+
+        while (matcher.find()) {
+            matcher.appendReplacement(result,String.format(format, matcher.group(1), matcher.group(2)));
+        }
+
+        matcher.appendTail(result);
+
+        return result.toString();
+
     }
 
-    private static String removeYoutubeVideos(String message) {
-        return FastReverseConversationHandler.removeSingle(
+    /**
+     * Parses images tags.
+     * @param message A message to be parsed
+     * @return A string in which all [img]s have been replaced with their URLs
+     */
+    private static String replaceImages(String message) {
+        return FastReverseConversationHandler.replaceSingle("\\[img\\](.*?)\\[/img\\]", message);
+    }
+
+    /**
+     * Parses YouTube tags.
+     * @param message A message to be parsed
+     * @return A string in which all [yt]s and [youtube]s have been replaced with their URLs
+     */
+    private static String replaceYoutubeVideos(String message) {
+        return FastReverseConversationHandler.replaceSingle(
                 "\\[yt\\](.*?)\\[/yt\\]",
-                FastReverseConversationHandler.removeSingle(
+                FastReverseConversationHandler.replaceSingle(
                         "\\[youtube\\](.*?)\\[/youtube\\]",
                         message
                 )
-
         );
     }
+
+    /**
+     * Parses URLs.
+     * @param message A message to be parsed
+     * @return A string in which all [url]s and [url=...]s have been replaced with their URLs (and description)
+     */
+    private static String replaceUrls(String message) {
+
+        return FastReverseConversationHandler.replaceSingle(
+                "\\[url\\](.*?)\\[/url\\]",
+                FastReverseConversationHandler.replaceDouble("\\[url=(.*?)\\](.*?)\\[/url\\]", message, "%2$s (%1$s)")
+        ); //replace banal urls as anything else
+
+    }
+
+    private static String replaceCode(String message) {
+        return FastReverseConversationHandler.replaceDouble("\\[code=(.*?)\\](.*?)\\[/code\\]", message, "\n[b]```%1$s[/b]\n%2$s\n[b]```[/b]\n");
+    }
+
+
 
 }
