@@ -113,7 +113,7 @@ public class ReverseConversationHandler implements ConversationHandler {
         HashMap<String, String> form = new HashMap<String, String>(4);
         form.put("from", String.valueOf(conversation.getOtherID()));
         form.put("to", String.valueOf(this.mMessenger.getUserID()));
-        form.put("start", String.valueOf(start));
+        form.put("start", String.valueOf(start/howMany));
         form.put("num", String.valueOf(howMany));
 
         String body = this.mMessenger.post("/pages/pm/read.html.php?action=conversation", form);
@@ -444,7 +444,7 @@ public class ReverseConversationHandler implements ConversationHandler {
         List<Message> mMessageList;
         private int mFetchStart;
         private int mIterateStart;
-        private Boolean mEndReached;
+        private boolean mEndReached;
 
         public ReverseMessageFetcher(Conversation conversation) {
             super(conversation.getOtherName(), conversation.getOtherID(), conversation.getLastDate());
@@ -458,7 +458,7 @@ public class ReverseConversationHandler implements ConversationHandler {
 
         @Override
         public int fetch(int limit) throws IOException, HttpException, ContentException {
-            Pair<List<Message>, Boolean> fetchedPair = ReverseConversationHandler.this.getMessagesAndCheck(this, this.mFetchStart/10, 10);
+            Pair<List<Message>, Boolean> fetchedPair = ReverseConversationHandler.this.getMessagesAndCheck(this, this.mFetchStart, 10);
 
             List<Message> fetched = fetchedPair.getLeft();
 
@@ -469,7 +469,7 @@ public class ReverseConversationHandler implements ConversationHandler {
             this.mMessageList = fetched;
 
             this.mFetchStart = fetched.size();
-            this.mEndReached = fetchedPair.getRight();
+            this.mEndReached = !fetchedPair.getRight();
             return this.mFetchStart;
         }
 
@@ -516,12 +516,12 @@ public class ReverseConversationHandler implements ConversationHandler {
 
             @Override
             public boolean hasNext() {
-                return mCurrentIndex == ReverseMessageFetcher.this.mMessageList.size();
+                return this.mCurrentIndex < ReverseMessageFetcher.this.mMessageList.size();
             }
 
             @Override
             public Message next() {
-                return ReverseMessageFetcher.this.mMessageList.get(this.mCurrentIndex);
+                return ReverseMessageFetcher.this.mMessageList.get(this.mCurrentIndex++);
             }
 
             @Override

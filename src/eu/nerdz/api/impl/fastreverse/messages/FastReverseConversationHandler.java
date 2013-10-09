@@ -220,7 +220,7 @@ public class FastReverseConversationHandler extends ReverseConversationHandler {
         StringBuffer result = new StringBuffer();
 
         while (matcher.find()) {
-            matcher.appendReplacement(result,matcher.group(1));
+            matcher.appendReplacement(result,matcher.group(1).replace("$", "\\$"));
         }
 
         matcher.appendTail(result);
@@ -228,15 +228,20 @@ public class FastReverseConversationHandler extends ReverseConversationHandler {
         return result.toString();
     }
 
-
-
+    /**
+     * Replaces a composite tag.
+     * @param regex A regex
+     * @param message A message to be parsed
+     * @param format A format for pretty formatting. Only 2 string fields.
+     * @return A string in which all occurrences of regex have been substituted with the contents matched
+     */
     private static String replaceDouble(String regex, String message, String format) {
 
         Matcher matcher = Pattern.compile(regex,Pattern.DOTALL | Pattern.CASE_INSENSITIVE).matcher(message);
         StringBuffer result = new StringBuffer();
 
         while (matcher.find()) {
-            matcher.appendReplacement(result,String.format(format, matcher.group(1), matcher.group(2)));
+            matcher.appendReplacement(result,String.format(format, matcher.group(1), matcher.group(2)).replace("$", "\\$"));
         }
 
         matcher.appendTail(result);
