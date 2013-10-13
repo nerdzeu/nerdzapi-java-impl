@@ -53,13 +53,19 @@ public class ReverseConversationHandler implements ConversationHandler {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<Conversation> getConversations() throws IOException, HttpException, ContentException {
-        List<Conversation> conversations = null;
+        return (List) this.getConversationsAsFetchers(); //Yes, I know, it's ugly. But do I really have to create a new list, when the one I have is already what I need?
+    }
+
+    @Override
+    public List<MessageFetcher> getConversationsAsFetchers() throws IOException, HttpException, ContentException {
+        List<MessageFetcher> conversations = null;
 
         List<String> rows = this.parseTableRows(this.mMessenger.get("/pages/pm/inbox.html.php"));
         if (rows != null) {
 
-            conversations = new ArrayList<Conversation>(20);
+            conversations = new ArrayList<MessageFetcher>(20);
 
             for (String row : rows)
                 conversations.add(this.parseConversationRow(row));
@@ -411,7 +417,7 @@ public class ReverseConversationHandler implements ConversationHandler {
      * @return A Conversation containing data parsed from row.
      * @throws ContentException
      */
-    private Conversation parseConversationRow(String row) throws ContentException {
+    private MessageFetcher parseConversationRow(String row) throws ContentException {
 
         int otherNamePosition = row.indexOf("<a href=");
         if (otherNamePosition < 0) {
@@ -436,7 +442,7 @@ public class ReverseConversationHandler implements ConversationHandler {
 
         Date lastDate = new Date(Long.parseLong(row.substring(dataTimePosition, row.indexOf('"', dataTimePosition))) * 1000L);
 
-        return new ReverseConversation(otherName, dataFrom, lastDate);
+        return new ReverseMessageFetcher(otherName, dataFrom, lastDate);
     }
 
     private class ReverseMessageFetcher extends ReverseConversation implements MessageFetcher {
@@ -447,8 +453,12 @@ public class ReverseConversationHandler implements ConversationHandler {
         private boolean mEndReached;
 
         public ReverseMessageFetcher(Conversation conversation) {
-            super(conversation.getOtherName(), conversation.getOtherID(), conversation.getLastDate());
+            this(conversation.getOtherName(), conversation.getOtherID(), conversation.getLastDate());
             this.reset();
+        }
+
+        public ReverseMessageFetcher(String userName, int userID, Date lastDate) {
+            super(userName, userID, lastDate);
         }
 
         @Override
@@ -484,6 +494,12 @@ public class ReverseConversationHandler implements ConversationHandler {
         }
 
         @Override
+        public List<Message> getFetchedMessages() {
+            this.mIterateStart = this.mFetchStart;
+            return this.mMessageList;
+        }
+
+        @Override
         public void setStart(int start) {
             this.mFetchStart = this.mIterateStart = start;
         }
@@ -508,20 +524,14 @@ public class ReverseConversationHandler implements ConversationHandler {
 
         private class ReverseMessageFetcherIterator implements Iterator<Message> {
 
-            private int mCurrentIndex;
-
-            public ReverseMessageFetcherIterator() {
-                this.mCurrentIndex = ReverseMessageFetcher.this.mIterateStart;
-            }
-
             @Override
             public boolean hasNext() {
-                return this.mCurrentIndex < ReverseMessageFetcher.this.mMessageList.size();
+                return ReverseMessageFetcher.this.mIterateStart < ReverseMessageFetcher.this.mMessageList.size();
             }
 
             @Override
             public Message next() {
-                return ReverseMessageFetcher.this.mMessageList.get(this.mCurrentIndex++);
+                return ReverseMessageFetcher.this.mMessageList.get(ReverseMessageFetcher.this.mIterateStart++);
             }
 
             @Override

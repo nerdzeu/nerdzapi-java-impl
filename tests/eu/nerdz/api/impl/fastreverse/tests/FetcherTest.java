@@ -41,11 +41,9 @@ public class FetcherTest {
             Messenger messenger = Nerdz.getImplementation("fastreverse.FastReverse").newMessenger(args[0], args[1]);
             ConversationHandler conversationHandler = messenger.getConversationHandler();
 
-            for (Conversation conversation : conversationHandler.getConversations()) {
+            for (MessageFetcher fetcher : conversationHandler.getConversationsAsFetchers()) {
 
-                System.out.println(conversation.toString() + "\n");
-
-				MessageFetcher fetcher = conversationHandler.createFetcher(conversation);
+                System.out.println(fetcher.toString() + "\n");
 
 				while(fetcher.hasMore()) {
 					fetcher.fetch();
