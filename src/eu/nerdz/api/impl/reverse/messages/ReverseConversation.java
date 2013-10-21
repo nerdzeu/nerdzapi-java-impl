@@ -21,7 +21,9 @@ package eu.nerdz.api.impl.reverse.messages;
 
 import java.util.Date;
 
+import eu.nerdz.api.ContentException;
 import eu.nerdz.api.messages.Conversation;
+import eu.nerdz.api.messages.Message;
 
 public class ReverseConversation implements Conversation {
 
@@ -57,7 +59,17 @@ public class ReverseConversation implements Conversation {
     }
 
     @Override
+    public void updateConversation(Message message) {
+        if (message.thisConversation().getOtherID() != this.mUserID) {
+            throw new ContentException("can't update this conversation with a message from another one");
+        }
+
+        this.mLastDate = message.getDate();
+    }
+
+    @Override
     public String toString() {
         return this.mOther + " (" + this.mUserID + ") , last contact on " + this.mLastDate;
     }
+
 }

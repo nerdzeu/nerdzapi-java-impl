@@ -36,6 +36,7 @@ import java.util.List;
 import eu.nerdz.api.BadStatusException;
 import eu.nerdz.api.ContentException;
 import eu.nerdz.api.HttpException;
+import eu.nerdz.api.UserInfo;
 import eu.nerdz.api.impl.reverse.AbstractReverseApplication;
 import eu.nerdz.api.messages.Conversation;
 import eu.nerdz.api.messages.ConversationHandler;
@@ -122,6 +123,8 @@ public class ReverseConversationHandler implements ConversationHandler {
         form.put("start", String.valueOf(start/howMany));
         form.put("num", String.valueOf(howMany));
 
+        UserInfo userInfo = this.mMessenger.getUserInfo();
+
         String body = this.mMessenger.post("/pages/pm/read.html.php?action=conversation", form);
 
         int endOfList = body.indexOf("<form id=\"convfrm\"");
@@ -142,7 +145,7 @@ public class ReverseConversationHandler implements ConversationHandler {
 
                 messages = new LinkedList<Message>();
                 for (String messageString : this.splitMessages(endOfList > 0 ? body.substring(headOfList, endOfList) : body.substring(headOfList)))
-                    messages.add(new ReverseMessage(this.parseSender(messageString), this.parseMessage(messageString), this.parseSenderID(messageString), this.parseDate(messageString)));
+                    messages.add(new ReverseMessage(conversation, userInfo, this.parseDate(messageString), this.parseMessage(messageString), this.parseSender(messageString).equals(conversation.getOtherName())));
             }
         }
 

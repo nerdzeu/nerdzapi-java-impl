@@ -54,6 +54,7 @@ import java.util.regex.Pattern;
 
 import eu.nerdz.api.ContentException;
 import eu.nerdz.api.HttpException;
+import eu.nerdz.api.UserInfo;
 import eu.nerdz.api.impl.reverse.messages.ReverseConversationHandler;
 import eu.nerdz.api.impl.reverse.messages.ReverseMessenger;
 import eu.nerdz.api.messages.Conversation;
@@ -61,9 +62,11 @@ import eu.nerdz.api.messages.Message;
 
 public class FastReverseConversationHandler extends ReverseConversationHandler {
 
+    private final UserInfo mUserInfo;
 
     public FastReverseConversationHandler(ReverseMessenger messenger) {
         super(messenger);
+        this.mUserInfo = messenger.getUserInfo();
     }
 
     @Override
@@ -129,17 +132,14 @@ public class FastReverseConversationHandler extends ReverseConversationHandler {
 
             Pair<String,Boolean> lastInfo = ((FastReverseConversation) conversation).getLastMessageInfo();
 
-            boolean lastWasOther = lastInfo.getRight();
-
             List<Message> lastMessage = new ArrayList<Message>(1);
             lastMessage.add( new FastReverseMessage(
-
-                                    lastWasOther ? conversation.getOtherName() : this.mMessenger.getUsername(),
-                                    lastInfo.getLeft(),
-                                    lastWasOther ? conversation.getOtherID() : this.mMessenger.getUserID(),
+                                    conversation,
+                                    this.mUserInfo,
                                     conversation.getLastDate(),
+                                    lastInfo.getLeft(),
+                                    lastInfo.getRight(),
                                     false
-
             ));
 
             return new ImmutablePair<List<Message>, Boolean>(lastMessage,false);
@@ -171,13 +171,14 @@ public class FastReverseConversationHandler extends ReverseConversationHandler {
 
                     JSONObject conversationJson = jsonResponse.getJSONObject(i);
 
-                    boolean sent = conversationJson.getBoolean("sent");
+                    boolean received = !conversationJson.getBoolean("sent");
 
                     conversationList.addFirst(new FastReverseMessage(
-                            sent ? this.mMessenger.getUsername() : conversation.getOtherName(),
-                            FastReverseConversationHandler.replaceBbcode(conversationJson.getString("message")),
-                            sent ? this.mMessenger.getUserID() : conversation.getOtherID(),
+                            conversation,
+                            this.mUserInfo,
                             new Date(conversationJson.getLong("timestamp") * 1000L),
+                            FastReverseConversationHandler.replaceBbcode(conversationJson.getString("message")),
+                            received,
                             conversationJson.getBoolean("read")
                     ));
                 }

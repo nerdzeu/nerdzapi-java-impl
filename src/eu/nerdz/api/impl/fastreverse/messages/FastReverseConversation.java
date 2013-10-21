@@ -24,11 +24,12 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.Date;
 
 import eu.nerdz.api.impl.reverse.messages.ReverseConversation;
+import eu.nerdz.api.messages.Message;
 
 public class FastReverseConversation extends ReverseConversation {
 
-    private final String mLastMessage;
-    private final boolean mLastWasOther;
+    private String mLastMessage;
+    private boolean mLastWasOther;
 
     public FastReverseConversation(String userName, int userID, Date lastDate, String lastMessage, boolean lastWasOther) {
         super(userName, userID, lastDate);
@@ -39,4 +40,12 @@ public class FastReverseConversation extends ReverseConversation {
     public Pair<String,Boolean> getLastMessageInfo() {
         return new ImmutablePair<String, Boolean>(this.mLastMessage, this.mLastWasOther);
     }
+
+    @Override
+    public void updateConversation(Message message) {
+        super.updateConversation(message);
+        this.mLastMessage = message.getContent();
+        this.mLastWasOther = message.received();
+    }
+
 }

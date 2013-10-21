@@ -21,6 +21,8 @@ package eu.nerdz.api.impl.reverse.messages;
 
 import java.util.Date;
 
+import eu.nerdz.api.UserInfo;
+import eu.nerdz.api.messages.Conversation;
 import eu.nerdz.api.messages.Message;
 
 /**
@@ -32,27 +34,40 @@ public class ReverseMessage implements Message {
      *
      */
     private static final long serialVersionUID = 2838062641195124239L;
-    private String mSenderName, mContent;
-    private int mSenderID;
-    private Date mDate;
+    private final String mContent;
+    private final ReverseConversation mConversation;
+    private final UserInfo mThisUserInfo; //Info about the user logged on the device on which this message has been created
+    private final Date mDate;
+    private final boolean mReceived;
 
-    public ReverseMessage(String senderName, String content, int senderID, Date date) {
+    /**
+     * Creates a ReverseMessage.
+     * @param conversation a Conversation in which this message must be used. Must be castable to Reverse
+     * @param thisUserInfo UserInfo about the current user
+     * @param date date of creation/reception of this message
+     * @param content a message
+     */
+    public ReverseMessage(Conversation conversation, UserInfo thisUserInfo, Date date, String content, boolean received) {
 
-        this.mSenderName = senderName;
+        this.mConversation = (ReverseConversation) conversation;
         this.mContent = content;
-        this.mSenderID = senderID;
+        this.mThisUserInfo = thisUserInfo;
         this.mDate = date;
+        this.mReceived = received;
 
+        if (conversation.getLastDate().compareTo(date) == -1) {
+            conversation.updateConversation(this);
+        }
     }
 
     @Override
-    public String getSenderName() {
-        return this.mSenderName;
+    public Conversation thisConversation() {
+        return this.mConversation;
     }
 
     @Override
-    public int getSenderID() {
-        return this.mSenderID;
+    public boolean received() {
+        return this.mReceived;
     }
 
     @Override
@@ -72,6 +87,6 @@ public class ReverseMessage implements Message {
 
     @Override
     public String toString() {
-        return this.mSenderName + " (" + this.mDate + "): " + this.mContent;
+        return (this.mReceived ? this.mConversation.getOtherName() : this.mThisUserInfo.getUsername()) + " (" + this.mDate + "): " + this.mContent;
     }
 }

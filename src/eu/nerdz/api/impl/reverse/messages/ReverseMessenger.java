@@ -32,6 +32,7 @@ import eu.nerdz.api.ContentException;
 import eu.nerdz.api.HttpException;
 import eu.nerdz.api.LoginException;
 import eu.nerdz.api.UserInfo;
+import eu.nerdz.api.UserNotFoundException;
 import eu.nerdz.api.WrongUserInfoTypeException;
 import eu.nerdz.api.impl.reverse.AbstractReverseApplication;
 import eu.nerdz.api.messages.ConversationHandler;
@@ -88,7 +89,7 @@ public class ReverseMessenger extends AbstractReverseApplication implements Mess
     }
 
     @Override
-    public Message sendMessage(String to, String message) throws IOException, HttpException, ContentException, BadStatusException {
+    public Message sendMessage(String to, String message) throws IOException, HttpException, ContentException, BadStatusException, UserNotFoundException {
 
         HashMap<String, String> form = new HashMap<String, String>(2);
 
@@ -105,7 +106,9 @@ public class ReverseMessenger extends AbstractReverseApplication implements Mess
             throw new ContentException("Error while parsing JSON in new messages: " + e.getLocalizedMessage());
         }
 
-        return new ReverseMessage(this.getUsername(), message, this.getUserID(), new Date());
+        Date now = new Date();
+
+        return new ReverseMessage(new ReverseConversation(to, this.getUserIdForName(to), now), this.getUserInfo(), now, message, false);
 
     }
 
@@ -116,6 +119,20 @@ public class ReverseMessenger extends AbstractReverseApplication implements Mess
         } catch (JSONException e) {
             throw new ContentException("Error while parsing JSON in new messages: " + e.getLocalizedMessage());
         }
+    }
+
+    //here you can see some fastfetch awesomeness.
+    @Override
+    public int getUserIdForName(String userName) throws UserNotFoundException, IOException, HttpException, ContentException {
+
+        int result;
+
+        try {
+            result = (new JSONObject(this.get("/fastfetch.json.php?action=getid&username=" + userName))).getInt("id");
+        } catch (JSONException e) {
+           throw new ContentException("Error while parsing JSON in new messages: " + e.getLocalizedMessage());
+        }
+        return result;
     }
 
     @Override

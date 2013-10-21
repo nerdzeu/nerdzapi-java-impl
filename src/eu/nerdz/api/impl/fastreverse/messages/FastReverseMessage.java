@@ -39,14 +39,16 @@ package eu.nerdz.api.impl.fastreverse.messages;
 
 import java.util.Date;
 
+import eu.nerdz.api.UserInfo;
 import eu.nerdz.api.impl.reverse.messages.ReverseMessage;
+import eu.nerdz.api.messages.Conversation;
 
 public class FastReverseMessage extends ReverseMessage {
 
     private boolean mRead;
 
-    public FastReverseMessage(String senderName, String content, int senderID, Date date, boolean read) {
-        super(senderName, content, senderID, date);
+    public FastReverseMessage(Conversation conversation, UserInfo thisUserInfo, Date date, String content, boolean received, boolean read) {
+        super(conversation, thisUserInfo, date, content, received);
         this.mRead = read;
     }
 
