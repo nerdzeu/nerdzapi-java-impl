@@ -28,13 +28,16 @@ import eu.nerdz.api.messages.Message;
 
 public class FastReverseConversation extends ReverseConversation {
 
+    private static final long serialVersionUID = -6815925809655654400L;
+
     private String mLastMessage;
     private boolean mLastWasOther;
 
-    public FastReverseConversation(String userName, int userID, Date lastDate, String lastMessage, boolean lastWasOther) {
+    public FastReverseConversation(String userName, int userID, Date lastDate, String lastMessage, boolean lastWasOther, boolean newMessages) {
         super(userName, userID, lastDate);
         this.mLastMessage = lastMessage;
         this.mLastWasOther = lastWasOther;
+        super.setHasNewMessages(newMessages);
     }
 
     public Pair<String,Boolean> getLastMessageInfo() {

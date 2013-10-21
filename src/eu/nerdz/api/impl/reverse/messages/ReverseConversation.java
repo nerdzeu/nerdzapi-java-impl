@@ -34,6 +34,7 @@ public class ReverseConversation implements Conversation {
     private final String mOther;
     private int mUserID;
     private Date mLastDate;
+    private boolean mNewMessages;
 
     public ReverseConversation(String userName, int userID, Date lastDate) {
         this.mOther = userName;
@@ -56,6 +57,21 @@ public class ReverseConversation implements Conversation {
     @Override
     public Date getLastDate() {
         return this.mLastDate;
+    }
+
+    @Override
+    public boolean hasNewMessages() {
+        return this.mNewMessages;
+    }
+
+    @Override
+    public void toggleHasNewMessages() {
+        this.setHasNewMessages(!this.mNewMessages);
+    }
+
+    @Override
+    public void setHasNewMessages(boolean newStatus) {
+        this.mNewMessages = newStatus;
     }
 
     @Override

@@ -102,7 +102,8 @@ public class FastReverseConversationHandler extends ReverseConversationHandler {
                             conversation.getInt("id"),
                             new Date(conversation.getLong("last_timestamp") * 1000L),
                             FastReverseConversationHandler.replaceBbcode(conversation.getString("last_message")),
-                            conversation.getInt("last_sender") != this.mMessenger.getUserID()
+                            conversation.getInt("last_sender") != this.mMessenger.getUserID(),
+                            conversation.getBoolean("new_messages")
 
                     ));
                 }
