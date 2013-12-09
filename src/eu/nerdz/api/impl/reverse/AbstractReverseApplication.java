@@ -60,8 +60,8 @@ public abstract class AbstractReverseApplication implements Application {
      * Represents the domain in which all post/get requests are made.
      */
 
-    public final static String PROTOCOL = "http";
-    public final static String SUBDOMAIN = "beta";
+    public final static String PROTOCOL = "https";
+    public final static String SUBDOMAIN = "www";
     public final static String SUBDOMAIN_FULL = AbstractReverseApplication.SUBDOMAIN + ".nerdz.eu";
     public final static String NERDZ_DOMAIN_NAME = AbstractReverseApplication.PROTOCOL + "://" + AbstractReverseApplication.SUBDOMAIN_FULL;
     /**
