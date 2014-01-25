@@ -24,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -128,7 +129,7 @@ public class ReverseMessenger extends AbstractReverseApplication implements Mess
         int result;
 
         try {
-            result = (new JSONObject(this.get("/fastfetch.json.php?action=getid&username=" + userName))).getInt("id");
+            result = (new JSONObject(this.get("/fastfetch.json.php?action=getid&username=" + URLEncoder.encode(userName, "UTF-8")))).getInt("id");
         } catch (JSONException e) {
            throw new ContentException("Error while parsing JSON in new messages: " + e.getLocalizedMessage());
         }

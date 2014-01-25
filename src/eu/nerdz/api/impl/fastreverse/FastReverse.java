@@ -54,11 +54,28 @@ class FastReverse extends Nerdz {
     @Override
     public UserInfo deserializeFromString(String data) throws WrongUserInfoTypeException {
 
-        String[] fields = data.split(" ");
+        String[] fields = new String[3];
 
-        if (fields.length != 3)
+        int tok = data.lastIndexOf(' '), precTok = tok;
+
+        //Why? Because the string is serialized in format "name id token". If name is a letter, and id a single digit,
+        //then the shortest valid string possibile is something like "a 1 c". Observe that the last space is in position 3.
+        if (tok < 3) {
             throw new WrongUserInfoTypeException("Data passed is not a Reverse serialization");
+        }
 
+        fields[2] = data.substring(tok + 1);
+
+        tok = data.lastIndexOf(' ', precTok - 1);
+
+        //Same as before, now it must be at least at position 1.
+        if (tok < 1) {
+            throw new WrongUserInfoTypeException("Data passed is not a Reverse serialization");
+        }
+
+        fields[1] = data.substring(tok + 1, precTok);
+
+        fields[0] = data.substring(0, tok);
         try {
             Integer.parseInt(fields[1]);
 
