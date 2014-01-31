@@ -34,6 +34,8 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.CoreProtocolPNames;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -43,6 +45,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import eu.nerdz.api.Application;
 import eu.nerdz.api.ContentException;
@@ -328,6 +331,42 @@ public abstract class AbstractReverseApplication implements Application {
 
 
         return body.trim();
+    }
+
+    @Override
+    public void registerForPush(String service, String devId) throws IOException, HttpException, ContentException {
+        Map<String,String> form = new HashMap<String, String>(2);
+        form.put("service", service);
+        form.put("devId", devId);
+        String body = this.post("/push.php?action=subscribe",form);
+
+        try {
+            JSONObject jObj = new JSONObject(body);
+
+            if(jObj.has("ERROR")) {
+                throw new ContentException("Cannot subscribe: " + jObj.getString("ERROR"));
+            }
+        } catch (JSONException e) {
+            throw new ContentException("Invalid json in response");
+        }
+    }
+
+    @Override
+    public void unregisterFromPush(String service, String devId) throws IOException, HttpException, ContentException {
+        Map<String,String> form = new HashMap<String, String>(2);
+        form.put("service", service);
+        form.put("devId", devId);
+        String body = this.post("/push.php?action=unsubscribe",form);
+
+        try {
+            JSONObject jObj = new JSONObject(body);
+
+            if(jObj.has("ERROR")) {
+                throw new ContentException("Cannot unsubscribe: " + jObj.getString("ERROR"));
+            }
+        } catch (JSONException e) {
+            throw new ContentException("Invalid json in response");
+        }
     }
 
     /**
