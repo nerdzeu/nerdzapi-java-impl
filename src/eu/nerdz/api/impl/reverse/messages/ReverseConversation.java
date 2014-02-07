@@ -76,9 +76,14 @@ public class ReverseConversation implements Conversation {
 
     @Override
     public void updateConversation(Message message) {
-        if (message.thisConversation().getOtherID() != this.mUserID) {
-            throw new ContentException("can't update this conversation with a message from another one");
-        }
+
+        Conversation thisConversation = message.thisConversation();
+
+        if(thisConversation != null) {
+            if (message.thisConversation().getOtherID() != this.mUserID) {
+                throw new ContentException("can't update this conversation with a message from another one");
+            }
+        } //if null, assume that we are forced to accept this message as good in any case
 
         this.mLastDate = message.getDate();
     }
