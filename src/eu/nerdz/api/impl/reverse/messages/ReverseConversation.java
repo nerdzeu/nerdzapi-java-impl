@@ -86,7 +86,6 @@ public class ReverseConversation implements Conversation {
         } //if null, assume that we are forced to accept this message as good in any case
 
         this.mLastDate = message.getDate();
-        this.setHasNewMessages(!message.read());
     }
 
     @Override
