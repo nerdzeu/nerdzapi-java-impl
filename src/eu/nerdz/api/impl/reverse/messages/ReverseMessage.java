@@ -67,7 +67,7 @@ public class ReverseMessage implements Message {
 
     @Override
     public boolean received() {
-        return false;
+        return this.mReceived;
     }
 
     @Override
