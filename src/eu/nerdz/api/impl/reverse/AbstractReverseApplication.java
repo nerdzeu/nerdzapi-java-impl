@@ -355,7 +355,7 @@ public abstract class AbstractReverseApplication implements Application {
     public void unregisterFromPush(String service, String devId) throws IOException, HttpException, ContentException {
         Map<String,String> form = new HashMap<String, String>(2);
         form.put("service", service);
-        form.put("devId", devId);
+        form.put("deviceId", devId);
         String body = this.post("/push.php?action=unsubscribe",form);
 
         try {
