@@ -76,6 +76,7 @@ public abstract class AbstractReverseApplication implements Application {
      */
     protected DefaultHttpClient mHttpClient;
     private String mUserName;
+    private String phpSessId;
 
     /**
      * the token, required for login.
@@ -91,13 +92,12 @@ public abstract class AbstractReverseApplication implements Application {
 
         this.mUserName = user;
         this.mHttpClient = new DefaultHttpClient();
-
+        
         String token;
-
         //fetch token.
         {
             String body = this.get();
-
+         
             // token is hidden in an input tag. It's needed just for login/logout
             int start = body.indexOf("<input type=\"hidden\" value=\"") + 28;
             token = body.substring(start, start + 32);
@@ -108,12 +108,14 @@ public abstract class AbstractReverseApplication implements Application {
         form.put("username", user);
         form.put("password", password);
         form.put("tok", token);
-
+        
         // login
-        String responseBody = this.post("/pages/profile/login.json.php", form, null, true);
-
+        String referer = NERDZ_DOMAIN_NAME;
+        String responseBody = this.post("/pages/profile/login.json.php", form, referer, true);
+        
         //check for a wrong login.
         if (responseBody.contains("error")) {
+            Log.i(TAG, "Error on login: \""+responseBody+"\"");
             throw new LoginException();
         }
     }
@@ -230,24 +232,34 @@ public abstract class AbstractReverseApplication implements Application {
 
         HttpGet get = new HttpGet(AbstractReverseApplication.NERDZ_DOMAIN_NAME + url);
         ResponseHandler<String> responseHandler = new BasicResponseHandler();
-
+        
         HttpResponse response = this.mHttpClient.execute(get);
         StatusLine statusLine = response.getStatusLine();
-
+        String temp="";
+        for (Header savedCookies : response.getAllHeaders()) {
+            if(phpSessId == null || phpSessId.equals("")){
+                temp = savedCookies.getValue();
+                if(temp.indexOf("PHPSESSID")>-1){
+                int start = temp.indexOf("PHPSESSID=")+10;
+                    phpSessId=temp.substring(start, start+26);
+                }
+            }
+        }
         int code = statusLine.getStatusCode();
         if (code != 200) {
+            Log.i(TAG, code+" - "+statusLine.getReasonPhrase());
             throw new HttpException(code, statusLine.getReasonPhrase());
         }
-
+        
         String body = responseHandler.handleResponse(response);
-
+        
         if (consume) {
             HttpEntity entity = response.getEntity();
             if (entity != null) {
                 entity.consumeContent();
             }
         }
-
+        
         return body.trim();
     }
 
@@ -298,38 +310,48 @@ public abstract class AbstractReverseApplication implements Application {
     public String post(String url, Map<String, String> form, String referer, boolean consume) throws IOException, HttpException {
 
         HttpPost post = new HttpPost(AbstractReverseApplication.NERDZ_DOMAIN_NAME + url);
-
+        
         post.getParams().setParameter(CoreProtocolPNames.USE_EXPECT_CONTINUE, Boolean.FALSE);
-
+        
         if (referer != null) {
             post.addHeader("Referer", referer);
         }
-
+        if (phpSessId != null){
+            CookieStore cookieStore = new BasicCookieStore();
+            BasicClientCookie cookie = new BasicClientCookie("PHPSESSID",phpSessId);
+            cookie.setDomain(AbstractReverseApplication.SUBDOMAIN_FULL);
+            cookie.setPath("/");
+            cookieStore.addCookie(cookie);
+            this.mHttpClient.setCookieStore(cookieStore);
+        }
+        
         List<NameValuePair> formEntries = new ArrayList<NameValuePair>(form.size());
         for (Map.Entry<String, String> entry : form.entrySet())
             formEntries.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
         post.setEntity(new UrlEncodedFormEntity(formEntries, "UTF-8"));
-
+        
         HttpResponse response = this.mHttpClient.execute(post);
+        
         StatusLine statusLine = response.getStatusLine();
-
+        
+        
         int code = statusLine.getStatusCode();
         if (code != 200) {
+            Log.e(TAG, code+" - "+statusLine.getReasonPhrase());
             throw new HttpException(code, statusLine.getReasonPhrase());
         }
-
+        
         ResponseHandler<String> responseHandler = new BasicResponseHandler();
-
+        
         String body = responseHandler.handleResponse(response);
-
+        
         if (consume) {
-            HttpEntity entity = response.getEntity();
+        HttpEntity entity = response.getEntity();
             if (entity != null) {
                 entity.consumeContent();
             }
         }
-
-
+        
         return body.trim();
     }
 
@@ -491,5 +513,4 @@ public abstract class AbstractReverseApplication implements Application {
 
     }
 }
-
 
