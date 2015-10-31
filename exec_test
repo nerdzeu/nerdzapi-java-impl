@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+java -classpath "$ROOTDIR/build/tests/:$ROOTDIR/build/jar/*:$ROOTDIR/real-libs/*:$ROOTDIR/run-libs/*" $1 ${@:2}
